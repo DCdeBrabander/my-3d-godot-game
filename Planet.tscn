@@ -1,0 +1,31 @@
+[gd_scene load_steps=7 format=3 uid="uid://d4bt1713bdvb2"]
+
+[ext_resource type="Script" uid="uid://4bvypl1vaey0" path="res://planet.gd" id="1_2hiue"]
+
+[sub_resource type="Gradient" id="Gradient_2hiue"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_8g7i6"]
+gradient = SubResource("Gradient_2hiue")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2hiue"]
+albedo_color = Color(7.29662e-05, 0.307415, 0.886324, 1)
+emission = Color(1, 1, 1, 1)
+backlight = Color(1, 1, 1, 1)
+backlight_texture = SubResource("GradientTexture2D_8g7i6")
+
+[sub_resource type="SphereMesh" id="SphereMesh_2hiue"]
+material = SubResource("StandardMaterial3D_2hiue")
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_2hiue"]
+
+[node name="Planet" type="Node3D" groups=["clickable", "hoverable"]]
+script = ExtResource("1_2hiue")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0145317, -0.0539924, -0.00778918)
+mesh = SubResource("SphereMesh_2hiue")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("SphereShape3D_2hiue")
