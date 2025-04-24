@@ -24,6 +24,6 @@ func add_planets() -> void:
 	for index in PlanetAmount: 
 		var planet = Planet.instantiate()
 		planet.position = Vector3((index + 1) * 5, 0, 0)
-		planet.orbit_center = system_center_node
+		planet.orbit_center_node = system_center_node
 		planet.planet_index = index 
 		add_child(planet)

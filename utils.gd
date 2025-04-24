@@ -1,4 +1,8 @@
+@tool
+
 extends Node
+
+var generated_names: Array = []
 
 var prefixes = [
 	"Zor", "Vel", "Xan", "Thal", "Kor", "Lum", "Nex", "Vor", "Gal", "Syr", "Dro", "Tyr"
@@ -13,7 +17,13 @@ var numerals = [
 ]
 
 func generate_planet_name(use_numeral := true) -> String:
-	var name = prefixes.pick_random() + suffixes.pick_random()
+	var random_name = prefixes.pick_random() + suffixes.pick_random()
+	
 	if use_numeral and randf() < 0.5:
-		name += " " + numerals.pick_random()
-	return name
+		random_name += " " + numerals.pick_random()
+	
+	if generated_names.has(random_name):
+		return generate_planet_name(use_numeral)
+		
+	generated_names.push_front(random_name)
+	return random_name

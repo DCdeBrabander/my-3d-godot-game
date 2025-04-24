@@ -39,18 +39,23 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_D: translate(Vector3(move_amount, 0, 0))
 
 func _check_hover(mouse_pos: Vector2) -> void:
-	var result = _raycast(mouse_pos)
-	if result:
-		var clicked = result.collider
-		var object = _get_parent_node(clicked)
+	var raycast_object = _raycast(mouse_pos)
+	
+	if raycast_object:
+		var hovered_object = _get_parent_node(raycast_object.collider)
+		
+		#if current_hover_node and current_hover_node != hovered_object: 
+			#current_hover_node.call_deferred("set_mouse_over", false)
 
-		if current_hover_node and current_hover_node != object: 
-			current_hover_node.call_deferred("set_mouse_over", false)
-
-		if object.is_in_group("hoverable") and object.has_method("set_mouse_over"):
-			object.call_deferred("set_mouse_over", true)
+		if hovered_object.is_in_group("hoverable") and hovered_object.has_method("set_mouse_over"):
+			hovered_object.call_deferred("set_mouse_over", true)
 			
-		current_hover_node = object
+		current_hover_node = hovered_object
+		return
+	
+	if current_hover_node:
+		current_hover_node.call_deferred("set_mouse_over", false)
+		current_hover_node = null
 
 func _check_click(mouse_pos: Vector2):
 	var result = _raycast(mouse_pos)
@@ -65,6 +70,9 @@ func _check_click(mouse_pos: Vector2):
 			object.call_deferred("set_active", true)
 			
 		current_active_node = object
+		return
+		
+	current_active_node and current_active_node.call_deferred("set_active", false)	
 
 func _raycast(mouse_pos: Vector2) -> Dictionary:
 	var from = project_ray_origin(mouse_pos)
