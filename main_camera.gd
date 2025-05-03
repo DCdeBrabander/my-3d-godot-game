@@ -43,18 +43,15 @@ func _check_hover(mouse_pos: Vector2) -> void:
 	
 	if raycast_object:
 		var hovered_object = _get_parent_node(raycast_object.collider)
-		
-		#if current_hover_node and current_hover_node != hovered_object: 
-			#current_hover_node.call_deferred("set_mouse_over", false)
 
-		if hovered_object.is_in_group("hoverable") and hovered_object.has_method("set_mouse_over"):
-			hovered_object.call_deferred("set_mouse_over", true)
+		if hovered_object.is_in_group("hoverable") and hovered_object.has_method("_on_mouse_over"):
+			hovered_object.call_deferred("_on_mouse_over", true)
 			
 		current_hover_node = hovered_object
 		return
 	
 	if current_hover_node:
-		current_hover_node.call_deferred("set_mouse_over", false)
+		current_hover_node.call_deferred("_on_mouse_over", false)
 		current_hover_node = null
 
 func _check_click(mouse_pos: Vector2):
@@ -66,8 +63,8 @@ func _check_click(mouse_pos: Vector2):
 		if current_active_node and current_active_node != object: 
 			current_active_node.call_deferred("set_active", false)
 
-		if object.is_in_group("clickable") and object.has_method("set_active"):
-			object.call_deferred("set_active", true)
+		if object.is_in_group("clickable"):
+			Signalbus.node_selected.emit(object)
 			
 		current_active_node = object
 		return

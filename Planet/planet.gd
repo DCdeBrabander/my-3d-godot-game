@@ -1,9 +1,12 @@
 @tool
 
-extends Node3D
+class_name Planet extends Node3D
 
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
 @onready var body: StaticBody3D = $StaticBody3D
+
+@onready var body_outline: ShaderMaterial
+@onready var has_focus: bool = false
 
 @export var MIN_RADIUS := 10
 @export var MAX_RADIUS := 30
@@ -26,9 +29,12 @@ var _planet_index: int = 1
 	set(value): _planet_index = value
 
 func _init() -> void:
-	planet_name = Utils.generate_planet_name(randf() < 0.5)
+	Signalbus.node_selected.connect(_on_entity_selected)
 	
 func _ready() -> void:
+	planet_name = Utils.generate_planet_name(randf() < 0.5)
+	body_outline = mesh_instance.get_active_material(0).next_pass as ShaderMaterial
+	
 	orbit_radius = 5.0 + planet_index * 5.0
 	orbit_speed = planet_index * 0.1
 	
@@ -38,26 +44,39 @@ func _ready() -> void:
 		
 	print("Planet '%s' is ready" % planet_name)
 	
-func set_mouse_over(state: bool):
-	print("Hovering planet: ", planet_name, state)
-	var outline_material := mesh_instance.get_active_material(0).next_pass as ShaderMaterial
-	outline_material.set_shader_parameter("show_outline", state)
-	#mesh_instance.material_override.set("shader_parameter/outline_enabled", state)
-
-func set_active(state: bool):
-	print("planet node received mouse event: click", state)
-	#mesh_instance.material_override.set("shader_parameter/selection_outline", state)
-
 func _process(delta: float):
 	if orbit_center_node == null: 
 		return
-
+#
 	angle += orbit_speed * delta
 	var x = orbit_radius * cos(angle)
 	var z = orbit_radius * sin(angle)
 	
 	# Set position relative to orbit center
 	global_position = orbit_center_node.global_position + Vector3(x, 0, z)
+	
+	# Set the position relative to the orbit center node (parent node)
+	#position = Vector3(x, 0, z)
+	
+func _on_mouse_over(state: bool):
+	if has_focus: return
+	show_outline(state)
+
+func show_outline(state: bool):
+	if state: fade_outline(1.0)
+	else: fade_outline(0.0)
 
 func set_center(position: Vector3) -> void:
 	rotate_around = position
+
+func _on_entity_selected(node: Node):
+	var selected = node == self
+	has_focus = selected
+	show_outline(selected)
+
+func fade_outline(to_value: float, duration := 0.2):
+	if body_outline.get_shader_parameter("outline_strength") == to_value:
+		return
+		
+	var tween := get_tree().create_tween()
+	tween.tween_property(body_outline, "shader_parameter/outline_strength", to_value, duration)

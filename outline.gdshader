@@ -8,6 +8,7 @@ uniform float fade_start : hint_range(0.0, 100.0) = 10.0; // Distance at which f
 uniform float fade_end : hint_range(0.0, 100.0) = 30.0; // Distance at which outline becomes invisible
 
 uniform bool show_outline = false;
+uniform float outline_strength : hint_range(0.0, 1.0) = 1.0;
 
 void vertex() {
 	// Convert the vertex position to clip space
@@ -27,7 +28,10 @@ void vertex() {
 }
 
 void fragment() {
-	if (show_outline == false) discard;
+	//if (show_outline == false) discard;
+	
+	if (outline_strength <= 0.01) discard;
+	
 	// Get the distance from the camera
 	//float dist = length(VERTEX);
 
@@ -36,5 +40,5 @@ void fragment() {
 
 	// Apply fade effect
 	ALBEDO = outline_color.rgb;
-	ALPHA = outline_color.a; // * fade; // Multiply alpha by fade factor
+	ALPHA = outline_color.a * outline_strength; // * fade; // Multiply alpha by fade factor
 }
