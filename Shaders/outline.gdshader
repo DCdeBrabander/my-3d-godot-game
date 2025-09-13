@@ -29,9 +29,9 @@ void vertex() {
 
 void fragment() {
 	//if (show_outline == false) discard;
-	
+
 	if (outline_strength <= 0.01) discard;
-	
+
 	// Get the distance from the camera
 	//float dist = length(VERTEX);
 

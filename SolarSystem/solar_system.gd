@@ -12,6 +12,8 @@ extends Node3D
 # In the future it could be a black hole? 
 var system_center_node: Node3D
 
+var planet_types = [RockyPlanet, GasPlanet, IcePlanet]
+
 func _ready() -> void:
 	add_child(hud)
 	add_sun()
@@ -26,6 +28,9 @@ func add_sun() -> void:
 func add_planets() -> void:
 	for index in PlanetAmount: 
 		var planet = Planet.instantiate()
+		
+		var planet_type = planet_types[randi() % planet_types.size()]
+		planet.set_script(planet_type)
 		
 		# Positioning planets in a circular orbit
 		var angle = index * (360 / PlanetAmount)  # Equal spacing

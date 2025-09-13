@@ -38,7 +38,6 @@ func _process(delta):
 	# If we're supposed to be somewhere else, smoothly move there
 	if orbit_center != target_orbit_center:
 		orbit_center = orbit_center.lerp(target_orbit_center, lerp_speed * delta)
-	
 		_update_camera_position()  # Update camera with new center
 
 func _update_camera_position():

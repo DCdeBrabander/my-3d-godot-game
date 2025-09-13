@@ -28,10 +28,13 @@ var _planet_index: int = 1
 	get: return _planet_index
 	set(value): _planet_index = value
 
-func _init() -> void:
-	Signalbus.node_selected.connect(_on_entity_selected)
-	
-func _ready() -> void:
+func _enter_tree() -> void:
+	Signalbus.connect("node_selected", _on_entity_selected)
+
+func _exit_tree() -> void:
+	Signalbus.disconnect("node_selected", _on_entity_selected)
+
+func _ready() -> void:	
 	planet_name = Utils.generate_planet_name(randf() < 0.5)
 	body_outline = mesh_instance.get_active_material(0).next_pass as ShaderMaterial
 	
@@ -41,7 +44,8 @@ func _ready() -> void:
 	body.set_meta("owner_node", self)
 	add_to_group("hoverable")
 	add_to_group("clickable")
-		
+	
+	setup_planet_type()
 	print("Planet '%s' is ready" % planet_name)
 	
 func _process(delta: float):
@@ -80,3 +84,6 @@ func fade_outline(to_value: float, duration := 0.2):
 		
 	var tween := get_tree().create_tween()
 	tween.tween_property(body_outline, "shader_parameter/outline_strength", to_value, duration)
+	
+func setup_planet_type():
+	pass
