@@ -10,7 +10,7 @@
 shader = ExtResource("4_d7pgu")
 shader_parameter/show_distant_stars = true
 shader_parameter/show_close_stars = true
-shader_parameter/distant_density = 3.0
+shader_parameter/distant_density = 2.0
 shader_parameter/distant_brightness = 1.0
 shader_parameter/distant_size = 0.05
 shader_parameter/distant_color_variation = 1.0
@@ -18,7 +18,7 @@ shader_parameter/close_density = 0.3
 shader_parameter/close_brightness = 3.0
 shader_parameter/close_size = 0.078
 shader_parameter/close_color_variation = 1.0
-shader_parameter/background_brightness = 0.036
+shader_parameter/background_brightness = 0.007
 
 [sub_resource type="Sky" id="Sky_pmgwc"]
 sky_material = SubResource("ShaderMaterial_bmnt8")
@@ -26,7 +26,6 @@ sky_material = SubResource("ShaderMaterial_bmnt8")
 [sub_resource type="Environment" id="Environment_1pbe0"]
 background_mode = 2
 background_color = Color(0.0823653, 0.0436106, 0.00121367, 1)
-background_energy_multiplier = 1.39
 sky = SubResource("Sky_pmgwc")
 glow_enabled = true
 glow_intensity = 1.37
@@ -37,11 +36,10 @@ fog_light_energy = 0.04
 fog_density = 1.0
 
 [node name="SolarSystem" type="Node3D"]
-transform = Transform3D(0.257723, 0.966219, -1.05074e-09, -0.8323, 0.222003, 0.507929, 0.490771, -0.130905, 0.861398, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.999999, 0, 0, 0)
 script = ExtResource("1_qsrmq")
 Sun = ExtResource("2_h1gvi")
 Planet = ExtResource("3_pabgd")
-PlanetAmount = 5
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1pbe0")
@@ -55,4 +53,5 @@ sky_mode = 1
 [node name="MainCamera" type="Camera3D" parent="."]
 top_level = true
 current = true
+far = 40000.0
 script = ExtResource("4_1pbe0")

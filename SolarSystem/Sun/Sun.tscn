@@ -12,8 +12,8 @@ backlight = Color(0.817028, 0.66116, 0.056841, 1)
 
 [sub_resource type="SphereMesh" id="SphereMesh_y3bnj"]
 material = SubResource("StandardMaterial3D_1y2s6")
-radius = 2.0
-height = 4.0
+radius = 62.38
+height = 124.76
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y3bnj"]
 albedo_color = Color(1, 1, 0, 1)
@@ -22,19 +22,20 @@ emission = Color(1, 1, 0, 1)
 
 [node name="Sun" type="Node3D"]
 script = ExtResource("1_1y2s6")
+MIN_RADIUS = 30
+MAX_RADIUS = 100
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_y3bnj")
+surface_material_override/0 = SubResource("StandardMaterial3D_y3bnj")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 visible = false
 sky_mode = 1
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
-light_color = Color(0.966392, 0.954825, 0.956555, 1)
+light_color = Color(0.978849, 1, 0.396481, 1)
 light_energy = 16.0
-light_size = 5.955
+light_size = 6.0
 omni_range = 4096.0
-omni_attenuation = 2.0
 omni_shadow_mode = 0
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("SphereMesh_y3bnj")
-surface_material_override/0 = SubResource("StandardMaterial3D_y3bnj")

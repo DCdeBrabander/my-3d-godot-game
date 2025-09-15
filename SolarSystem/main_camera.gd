@@ -1,14 +1,15 @@
 extends Camera3D
 
 var rotation_speed = 0.005
-var zoom_speed = 2.0
 var lerp_speed = 3.0
 
 var current_hover_node: Node
 var current_active_node: Node
 
+var zoom_speed = 50.0
 var min_zoom = 5.0
-var max_zoom = 100.0
+var max_zoom = 10000.0
+var current_zoom_distance = 1000.0
 
 # Add rotation constraints
 var min_pitch = -80.0  # degrees
@@ -17,50 +18,44 @@ var max_pitch = 80.0   # degrees
 # Track rotation separately
 var yaw = 0.0
 var pitch = 0.0
-var zoom_distance = 50.0
 
-var orbit_center := Vector3.ZERO  # Current center position we're orbiting
-var target_orbit_center := Vector3.ZERO  # Where we want the center to be
-var current_orbit_target: Node3D = null  # The actual object we're following (if any)
+var current_focus := Vector3.ZERO
+var target_focus := Vector3.ZERO
+var node_to_follow: Node3D = null
+var manual_focus = false
+ 
+# Follow modes
+enum FollowMode {
+	NONE,           # Free camera
+	ORBIT,          # Orbit around target
+	CHASE,          # Follow behind target
+	FIXED_OFFSET    # Maintain fixed offset from target
+}
+
+var follow_mode: FollowMode = FollowMode.NONE
+var follow_offset := Vector3.ZERO 	# For FIXED_OFFSET mode
+var follow_distance := 50.0 		# For CHASE mode
 
 func _ready():
 	# Zoom the camera back on Z axis (common for perspective)
-	transform.origin = Vector3(0, 10, 50)  # (X, Y, Z)
+	# and set initial position
+	#transform.origin = Vector3(0, 100000, 5000)  # (X, Y, Z)
 	
-	# Optional: look at the center of the scene
-	look_at(Vector3.ZERO, Vector3.UP)
-
-	# Set initial position
-	zoom_distance = 50.0
-	_update_camera_position()
-
-func _process(delta):
-	# If we're supposed to be somewhere else, smoothly move there
-	if orbit_center != target_orbit_center:
-		orbit_center = orbit_center.lerp(target_orbit_center, lerp_speed * delta)
-		_update_camera_position()  # Update camera with new center
-
-func _update_camera_position():
-	# Convert to radians and apply rotations
-	var yaw_rad = deg_to_rad(yaw)
-	var pitch_rad = deg_to_rad(pitch)
+	current_zoom_distance = 500
+	pitch = 20.0
 	
-	# Calculate position based on spherical coordinates
-	var x = zoom_distance * cos(pitch_rad) * sin(yaw_rad)
-	var y = zoom_distance * sin(pitch_rad)
-	var z = zoom_distance * cos(pitch_rad) * cos(yaw_rad)
-	
-	#transform.origin = Vector3(x, y, z)
-	#look_at(Vector3.ZERO, Vector3.UP)
-	transform.origin = Vector3(x, y, z) + orbit_center  # Add orbit_center offset
-	look_at(orbit_center, Vector3.UP)  # Look at orbit_center instead of zero
+	update_camera_position()
 
+func _process(delta: float) -> void:
+	animate_to_focus_position(delta)
+	update_camera_position()
+	
 func _unhandled_input(event: InputEvent) -> void:
 	# When mouse is moving inside camera/viewport we want to
 	# 1. check if we are hovering objects
 	# 2. pan the viewport if we are also pressing right mouse button
 	if event is InputEventMouseMotion:
-		_check_hover(event.position)
+		check_hover(event.position)
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 			move_on_mouse_right_click(event)
 	
@@ -71,11 +66,24 @@ func _unhandled_input(event: InputEvent) -> void:
 		zoom_on_mouse_scroll(event)
 			
 		if event.button_index == MOUSE_BUTTON_LEFT:
-			_check_click(event.position)
+			check_click(event.position)
 	
 	# When keyboard presses are registered 
 	# we want to check if we should move the camera
 	elif event is InputEventKey and event.pressed: move_on_key_press(event)
+
+func update_camera_position() -> void:
+	# Convert to radians and apply rotations
+	var yaw_rad = deg_to_rad(yaw)
+	var pitch_rad = deg_to_rad(pitch)
+	
+	# Calculate position based on spherical coordinates
+	var x = current_zoom_distance * cos(pitch_rad) * sin(yaw_rad)
+	var y = current_zoom_distance * sin(pitch_rad)
+	var z = current_zoom_distance * cos(pitch_rad) * cos(yaw_rad)
+	
+	transform.origin = Vector3(x, y, z) + current_focus  # Add current_focus offset
+	look_at(current_focus, Vector3.UP)
 
 func move_on_key_press(event: InputEventKey):
 	var move_amount := 1.0
@@ -87,20 +95,20 @@ func move_on_key_press(event: InputEventKey):
 		
 func zoom_on_mouse_scroll(event: InputEventMouseButton):
 	if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-		zoom_distance = clamp(zoom_distance - zoom_speed, min_zoom, max_zoom)
-		_update_camera_position()
+		current_zoom_distance = clamp(current_zoom_distance - zoom_speed, min_zoom, max_zoom)
+		update_camera_position()
 	elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-		zoom_distance = clamp(zoom_distance + zoom_speed, min_zoom, max_zoom)
-		_update_camera_position()
+		current_zoom_distance = clamp(current_zoom_distance + zoom_speed, min_zoom, max_zoom)
+		update_camera_position()
 		
 func move_on_mouse_right_click(event: InputEventMouseMotion):
 	yaw += rad_to_deg(event.relative.x * rotation_speed)
 	pitch -= rad_to_deg(event.relative.y * rotation_speed)
 	pitch = clamp(pitch, min_pitch, max_pitch)
-	_update_camera_position()
+	update_camera_position()
 
-func _check_hover(mouse_pos: Vector2) -> void:
-	var raycast_object = _raycast(mouse_pos)
+func check_hover(mouse_pos: Vector2) -> void:
+	var raycast_object = cast_ray_to_pos(mouse_pos)
 	
 	if raycast_object:
 		var hovered_object = _get_parent_node(raycast_object.collider)
@@ -115,9 +123,9 @@ func _check_hover(mouse_pos: Vector2) -> void:
 		current_hover_node.call_deferred("_on_mouse_over", false)
 		current_hover_node = null
 
-func _check_click(mouse_pos: Vector2):
+func check_click(mouse_pos: Vector2):
 	# Cast a ray from mouse position 'forward' into the scene (under the mouse)
-	var result = _raycast(mouse_pos)
+	var result = cast_ray_to_pos(mouse_pos)
 	
 	if result:
 		var clicked_object = result.collider
@@ -132,20 +140,32 @@ func _check_click(mouse_pos: Vector2):
 			Signalbus.node_selected.emit(clicked_node)
 			
 		current_active_node = clicked_node
-		set_new_orbit_center(current_active_node.global_position)
+		#update_focus_position(current_active_node.global_position)
+		
+		if clicked_node is Node3D: set_follow_target(clicked_node)
 		return
 	
 	# If nothing is clicked but something is active, deactivate it.
 	@warning_ignore("standalone_expression")
 	current_active_node and current_active_node.call_deferred("set_active", false)
 	
-func set_new_orbit_center(new_position: Vector3):
-	target_orbit_center = new_position
+func update_focus_position(new_position: Vector3):
+	target_focus = new_position
 	
-	# The _process() function will handle the smooth transition
-func _raycast(mouse_pos: Vector2) -> Dictionary:
+# The _process() function will handle the smooth transition 
+# by giving it the delta
+func animate_to_focus_position(delta: float):
+	if node_to_follow and not manual_focus:
+		target_focus = node_to_follow.global_position
+	
+	if current_focus.is_equal_approx(target_focus):
+		return
+		
+	current_focus = current_focus.lerp(target_focus, lerp_speed * delta)
+
+func cast_ray_to_pos(mouse_pos: Vector2) -> Dictionary:
 	var from = project_ray_origin(mouse_pos)
-	var to = from + project_ray_normal(mouse_pos) * 1000
+	var to = from + project_ray_normal(mouse_pos) * 10000000000
 	var space_state = get_world_3d().direct_space_state
 	return space_state.intersect_ray(PhysicsRayQueryParameters3D.create(from, to))
 
@@ -156,3 +176,12 @@ func _get_parent_node(object: Node) -> Node:
 	# maybe we want to implement get_parent() directly later on
 	
 	return object
+
+func set_follow_target(target: Node3D):
+	node_to_follow = target
+	manual_focus = false
+	if target: target_focus = target.global_position
+
+func stop_following():
+	node_to_follow = null
+	manual_focus = false

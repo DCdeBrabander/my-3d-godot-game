@@ -1,7 +1,9 @@
+@tool 
 class_name RockyPlanet extends Planet
 
-func setup_planet_type():
-	# Set rocky planet color
+const RADIUS_RANGE = Vector2(0.5, 1.8)
+
+func _setup_type_surface():
 	if mesh_instance and mesh_instance.get_active_material(0):
 		var material = mesh_instance.get_active_material(0) as StandardMaterial3D
 		if material:

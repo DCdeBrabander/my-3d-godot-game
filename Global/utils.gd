@@ -27,3 +27,14 @@ func generate_planet_name(use_numeral := true) -> String:
 		
 	generated_names.push_front(random_name)
 	return random_name
+
+# Determine a planet size (radius) from a range using a curve.
+func pick_from_range_with_bias(range: Vector2) -> float:
+	var rmin = range.x
+	var rmax = range.y
+
+	# Bias toward the middle of the range by averaging two uniform samples
+	var u = (randf() + randf()) / 2.0   # triangular distribution
+	var radius = lerp(rmin, rmax, u)
+
+	return round(radius * 100.0) / 100.0
