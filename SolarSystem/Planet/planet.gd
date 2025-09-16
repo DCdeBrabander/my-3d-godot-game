@@ -1,7 +1,7 @@
 @tool
 
 # Planet is an "Abstract Class" 
-# and are extended fy Rocky, Ice, Gas, .... planets
+# and are extended by Rocky, Ice, Gas, .... planets
 class_name Planet extends Node3D
 
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
@@ -88,7 +88,7 @@ func fade_outline(to_value: float, duration := 0.2):
 	var tween := get_tree().create_tween()
 	tween.tween_property(body_outline, "shader_parameter/outline_strength", to_value, duration)
 
-# Simple defnitions, these are overridden in child-planets
+# Simple defnitions, these are overridden in child-planets.
 func planet_type_setup():
 	self.setup_type_surface()
 	self.setup_type_size()
@@ -96,17 +96,17 @@ func planet_type_setup():
 func setup_type_surface(): pass
 
 func setup_type_size():
-	var radius:float = Utils.pick_from_range_with_bias(
+	var collision_shape = find_child("CollisionShape3D", true, false)
+	var radius: float = Utils.pick_from_range_with_bias(
 		self.RADIUS_RANGE
 	)
 		
 	if mesh_instance and mesh_instance.mesh is SphereMesh:
 		var sphere := mesh_instance.mesh as SphereMesh
-		var collision_shape = find_child("CollisionShape3D", true, false)
 		
 		sphere.radius = radius
 		sphere.height = radius * 2.0
 		
-		if collision_shape and collision_shape.shape is SphereShape3D:
-			var collision_sphere := collision_shape.shape as SphereShape3D
-			collision_sphere.radius = radius * 1.1
+	if collision_shape and collision_shape.shape is SphereShape3D:
+		var collision_sphere := collision_shape.shape as SphereShape3D
+		collision_sphere.radius = radius * 1.1

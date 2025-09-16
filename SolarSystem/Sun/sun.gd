@@ -8,9 +8,7 @@ class_name Sun extends Node3D
 @export var MAX_RADIUS := 40
 
 func _ready():
-	#set_color(Color.YELLOW)
 	position = Vector3(0, 0, 0)
-	#set_size()
 		
 func set_color(color: Color):
 	var mat = StandardMaterial3D.new()
@@ -28,3 +26,9 @@ func set_size() -> void:
 		sphere.radius = radius
 		sphere.height = radius * 2.0
 		#mesh_instance.mesh = sphere
+		
+func get_radius() -> float:
+	if not mesh_instance or not mesh_instance.mesh is SphereMesh:
+		return 1.0  # fallback
+	
+	return mesh_instance.mesh.radius

@@ -1,10 +1,17 @@
-[gd_scene load_steps=9 format=3 uid="uid://gl51fcna60vo"]
+[gd_scene load_steps=11 format=3 uid="uid://gl51fcna60vo"]
 
 [ext_resource type="Script" uid="uid://c1ga2ip6mrgn6" path="res://SolarSystem/solar_system.gd" id="1_qsrmq"]
 [ext_resource type="PackedScene" uid="uid://cyw28c4voojw2" path="res://SolarSystem/Sun/Sun.tscn" id="2_h1gvi"]
 [ext_resource type="PackedScene" uid="uid://d4bt1713bdvb2" path="res://SolarSystem/Planet/Planet.tscn" id="3_pabgd"]
 [ext_resource type="Script" uid="uid://bhgf21ngh7xaq" path="res://SolarSystem/main_camera.gd" id="4_1pbe0"]
 [ext_resource type="Shader" uid="uid://c6o3dpyav8qim" path="res://SolarSystem/SolarSystem.gdshader" id="4_d7pgu"]
+[ext_resource type="Script" uid="uid://6qle6aeahlcv" path="res://SolarSystem/planet_factory.gd" id="6_5amox"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n2bd0"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(1, 1, 1, 0.1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bmnt8"]
 shader = ExtResource("4_d7pgu")
@@ -40,6 +47,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.999999, 0, 0, 0)
 script = ExtResource("1_qsrmq")
 Sun = ExtResource("2_h1gvi")
 Planet = ExtResource("3_pabgd")
+planet_amount = 10
+orbit_material = SubResource("StandardMaterial3D_n2bd0")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1pbe0")
@@ -55,3 +64,7 @@ top_level = true
 current = true
 far = 40000.0
 script = ExtResource("4_1pbe0")
+
+[node name="PlanetFactory" type="Node" parent="."]
+script = ExtResource("6_5amox")
+Planet = ExtResource("3_pabgd")

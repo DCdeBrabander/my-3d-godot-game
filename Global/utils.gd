@@ -6,7 +6,7 @@ var generated_names: Array = []
 
 func generate_planet_name(use_numeral := true) -> String:
 	var prefixes = [
-		"Zor", "Vel", "Xan", "Thal", "Kor", "Lum", "Nex", "Vor", "Gal", "Syr", "Dro", "Tyr"
+		"Zor", "Vel", "Xan", "Thal", "Kor", "Lum", "Nex", "Vor", "Gal", "Syr", "Dro", "Tyr", "Lyn"
 	]
 
 	var suffixes = [

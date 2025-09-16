@@ -1,24 +1,32 @@
 @tool
 
-extends Node3D
+class_name SolarSystem extends Node3D
 
 @export var Sun: PackedScene
 @export var Planet: PackedScene
-@export var planet_amount := 10
+
+@export var planet_amount := 8
 @export var orbit_material: StandardMaterial3D
+@export var orbit_material_highlighted: StandardMaterial3D
 
 @onready var MainCamera: Camera3D = $MainCamera
 @onready var HUD: CanvasLayer = preload("res://UI/HUD.tscn").instantiate()
+@onready var PlanetFactory: PlanetFactory = $PlanetFactory
 
 # In the future it could be a black hole? 
 var system_center_node: Node3D
-var planet_types = [RockyPlanet, GasPlanet, IcePlanet]
+
+# Orbit management
+var planets: Array[Planet] = []
+var orbit_circles: Array[MeshInstance3D] = []
+var planet_orbit_map: Dictionary = {}  # planet_index -> orbit_circle
+var active_planet_index: int = -1
 
 # TODO: Use as AU ?
 var universal_unit = 1.0
 
 func _ready() -> void:
-	set_orbit_circle_style()
+	#set_orbit_circle_style()
 	add_child(HUD)
 	add_sun()
 	add_planets()
@@ -27,54 +35,28 @@ func add_sun() -> void:
 	var sun = Sun.instantiate()
 	system_center_node = sun
 	add_child(sun)
-	
+
 func add_planets() -> void:
-	for index in planet_amount: 
-		var planet: Planet = Planet.instantiate()
-		
-		# Determine type of planet and load corresponding script into it
-		var planet_type = planet_types[randi() % planet_types.size()]
-		planet.set_script(planet_type)
-		
-		# Positioning planets in a circular orbit
-		var orbit_radius = get_new_orbit_radius(index)
-		
-		var orbit_angle = index * (360 / planet_amount)
-		
-		planet.orbit_radius = orbit_radius
-		planet.orbit_angle = orbit_angle
-		
-		planet.position = Vector3(
-			orbit_radius * cos(deg_to_rad(orbit_angle)), 
-			0, 
-			orbit_radius * sin(deg_to_rad(orbit_angle))
+	for index in planet_amount:
+		var planet = PlanetFactory.create_planet(
+			index, 
+			planet_amount, 
+			system_center_node
 		)
-		
-		planet.orbit_center_node = system_center_node
-		planet.planet_index = index
 		add_child(planet)
-		create_orbit_circle(planet, orbit_angle)
+		
+		var orbit_circle = create_orbit_circle(planet)
+		orbit_circles.append(orbit_circle)
+		planet_orbit_map[index] = orbit_circle
+		add_child(orbit_circle)
 
-
-func get_sun_radius() -> float:
-	if not system_center_node or not system_center_node.mesh_instance or not system_center_node.mesh_instance.mesh is SphereMesh:
-		return 1.0  # fallback
-	
-	return system_center_node.mesh_instance.mesh.radius
-	
-func get_new_orbit_radius(index: int, base: float = 100.0) -> float:
-	# Rough approximation of Titius-Bode law
-	var radius = base * (0.4 + 0.3 * pow(2, index))
-	return max(radius, get_sun_radius() * 2)
-
-func create_orbit_circle(planet: Planet, orbit_angle):
+func create_orbit_circle(planet: Planet):
 	var orbit_visual = Node3D.new()
 	orbit_visual.name = "OrbitCircle"
 	
-	# Create circle points (same as before)
 	var points = PackedVector3Array()
-	var segments = 128
-	
+	var segments = clamp(int(planet.orbit_radius / 5), 64, 256)  # Fewer segments for smaller orbits
+
 	for i in range(segments + 1):
 		var angle = (i * PI * 2) / segments
 		var x = planet.orbit_radius * cos(angle)
@@ -97,12 +79,72 @@ func create_orbit_circle(planet: Planet, orbit_angle):
 	orbit_visual.rotation = Vector3.ZERO  
 	orbit_visual.scale = Vector3.ONE
 	
-	add_child(orbit_visual)
-
-func set_orbit_circle_style():
+	return orbit_visual
+	
+func setup_orbit_materials():
+	# Default orbit material - subtle
 	orbit_material = StandardMaterial3D.new()
-	orbit_material.albedo_color = Color(1.0, 1.0, 1.0, 0.1)
+	orbit_material.albedo_color = Color(1.0, 1.0, 1.0, 0.15)  # Slightly more visible than 0.01
 	orbit_material.flags_unshaded = true
 	orbit_material.flags_transparent = true
-	orbit_material.vertex_color_use_as_albedo = true  # Optional: if you want colored lines
-	#orbit_material.flags_use_point_size = true
+	orbit_material.no_depth_test = true  # Prevents z-fighting
+	orbit_material.vertex_color_use_as_albedo = false
+	
+	# Highlighted orbit material - bright and visible
+	orbit_material_highlighted = StandardMaterial3D.new()
+	orbit_material_highlighted.albedo_color = Color(1.0, 1.0, 0.0, 0.8)  # Bright yellow
+	orbit_material_highlighted.flags_unshaded = true
+	orbit_material_highlighted.flags_transparent = true
+	orbit_material_highlighted.no_depth_test = true
+	orbit_material_highlighted.vertex_color_use_as_albedo = false
+
+# Public API for orbit highlighting
+func highlight_planet_orbit(planet_index: int):
+	# Unhighlight current orbit if any
+	if active_planet_index >= 0:
+		unhighlight_current_orbit()
+	
+	# Highlight the requested orbit
+	if planet_orbit_map.has(planet_index):
+		var orbit_circle = planet_orbit_map[planet_index]
+		orbit_circle.material_override = orbit_material_highlighted
+		active_planet_index = planet_index
+
+func unhighlight_current_orbit():
+	if active_planet_index >= 0 and planet_orbit_map.has(active_planet_index):
+		var orbit_circle = planet_orbit_map[active_planet_index]
+		orbit_circle.material_override = orbit_material
+		active_planet_index = -1
+
+func unhighlight_all_orbits():
+	for orbit_circle in orbit_circles:
+		orbit_circle.material_override = orbit_material
+	active_planet_index = -1
+
+# Signal handlers
+func _on_planet_selected(planet_index: int):
+	highlight_planet_orbit(planet_index)
+
+func _on_planet_deselected():
+	unhighlight_current_orbit()
+
+# Utility functions
+func get_planet_by_index(index: int) -> Planet:
+	if index >= 0 and index < planets.size():
+		return planets[index]
+	return null
+
+func get_active_planet() -> Planet:
+	return get_planet_by_index(active_planet_index)
+
+# For external systems to trigger highlighting
+func set_active_planet(planet_index: int):
+	highlight_planet_orbit(planet_index)
+
+func clear_active_planet():
+	unhighlight_current_orbit()
+
+# Optional: Toggle all orbit visibility
+func set_orbits_visible(visible: bool):
+	for orbit_circle in orbit_circles:
+		orbit_circle.visible = visible
