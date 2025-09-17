@@ -47,7 +47,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.999999, 0, 0, 0)
 script = ExtResource("1_qsrmq")
 Sun = ExtResource("2_h1gvi")
 Planet = ExtResource("3_pabgd")
-planet_amount = 10
 orbit_material = SubResource("StandardMaterial3D_n2bd0")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]

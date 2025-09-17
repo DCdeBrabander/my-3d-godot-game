@@ -37,12 +37,20 @@ var _orbit_radius: float = 10.0
 
 func _enter_tree() -> void:
 	Signalbus.connect("node_selected", _on_entity_selected)
+	Signalbus.connect("node_deselected", _on_entity_deselected);
 
 func _exit_tree() -> void:
 	Signalbus.disconnect("node_selected", _on_entity_selected)
+	Signalbus.disconnect("node_deselected", _on_entity_deselected);
+	
+func _on_static_body_3d_mouse_entered() -> void:
+	_on_mouse_over(true)
+
+func _on_static_body_3d_mouse_exited() -> void:
+	_on_mouse_over(false)
 
 func _ready() -> void:
-	planet_name = Utils.generate_planet_name(randf() < 0.5)
+	planet_name = Utils.generate_planet_name()
 	body_outline = mesh_instance.get_active_material(0).next_pass as ShaderMaterial
 	
 	body.set_meta("owner_node", self)
@@ -76,10 +84,19 @@ func show_outline(state: bool) -> void:
 func set_center(position: Vector3) -> void:
 	rotate_around = position
 
+# Some entity has been selected, check if its this node
+# TODO: maybe we dont need to subscribe to event listener for ALL entities. (refactor in future)
 func _on_entity_selected(node: Node):
+	print('planet._on_entity_selected')
 	var selected = node == self
 	has_focus = selected
 	show_outline(selected)
+
+func _on_entity_deselected(node: Node):
+	print('planet._on_entity_deselected')
+	var deselected = node == self
+	has_focus = deselected
+	show_outline(deselected)
 
 func fade_outline(to_value: float, duration := 0.2):
 	if body_outline.get_shader_parameter("outline_strength") == to_value:
@@ -103,10 +120,9 @@ func setup_type_size():
 		
 	if mesh_instance and mesh_instance.mesh is SphereMesh:
 		var sphere := mesh_instance.mesh as SphereMesh
-		
 		sphere.radius = radius
 		sphere.height = radius * 2.0
 		
-	if collision_shape and collision_shape.shape is SphereShape3D:
-		var collision_sphere := collision_shape.shape as SphereShape3D
-		collision_sphere.radius = radius * 1.1
+		if collision_shape and collision_shape.shape is SphereShape3D:
+			var collision_sphere := collision_shape.shape as SphereShape3D
+			collision_sphere.radius = sphere.height * 1.25

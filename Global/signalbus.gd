@@ -1,5 +1,4 @@
-extends Node
+class_name SignalBus extends Node
 
-class_name SignalBus
-
-signal node_selected(selected_node)
+signal node_selected(selected_node: Node)
+signal node_deselected(deselected_node: Node)
