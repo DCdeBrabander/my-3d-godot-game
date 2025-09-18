@@ -1,4 +1,6 @@
-extends Camera3D
+@tool
+
+class_name MainCamera extends Camera3D
 
 var target_yaw: float = 0.0
 var target_pitch: float = 20.0

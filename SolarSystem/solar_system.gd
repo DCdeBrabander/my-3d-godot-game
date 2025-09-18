@@ -9,8 +9,9 @@ class_name SolarSystem extends Node3D
 @export var orbit_material: StandardMaterial3D
 @export var orbit_material_highlighted: StandardMaterial3D
 
-@onready var MainCamera: Camera3D = $MainCamera
-@onready var HUD: CanvasLayer = preload("res://UI/HUD.tscn").instantiate()
+@onready var MainCamera: Camera3D = $MainCamera #TODO move to new main scene
+@onready var GlobalLight: DirectionalLight3D = $DirectionalLight3D # unused, cleanup
+@onready var HUD: CanvasLayer = preload("res://UI/HUD.tscn").instantiate() # TODO move to new main scene
 @onready var PlanetFactory: PlanetFactory = $PlanetFactory
 
 # In the future it could be a black hole? 
@@ -115,6 +116,7 @@ func setup_orbit_materials():
 	orbit_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	orbit_material.albedo_color.a = 0.05
 	orbit_material.unshaded = true
+	orbit_material.cull_mode = BaseMaterial3D.CullMode.CULL_DISABLED
 	
 	# Selected orbit material (brighter, different color)
 	orbit_material_highlighted = StandardMaterial3D.new()

@@ -1,17 +1,24 @@
-[gd_scene load_steps=11 format=3 uid="uid://gl51fcna60vo"]
+[gd_scene load_steps=12 format=3 uid="uid://gl51fcna60vo"]
 
 [ext_resource type="Script" uid="uid://c1ga2ip6mrgn6" path="res://SolarSystem/solar_system.gd" id="1_qsrmq"]
 [ext_resource type="PackedScene" uid="uid://cyw28c4voojw2" path="res://SolarSystem/Sun/Sun.tscn" id="2_h1gvi"]
 [ext_resource type="PackedScene" uid="uid://d4bt1713bdvb2" path="res://SolarSystem/Planet/Planet.tscn" id="3_pabgd"]
-[ext_resource type="Script" uid="uid://bhgf21ngh7xaq" path="res://SolarSystem/main_camera.gd" id="4_1pbe0"]
+[ext_resource type="Script" uid="uid://bhgf21ngh7xaq" path="res://Camera/main_camera.gd" id="4_1pbe0"]
 [ext_resource type="Shader" uid="uid://c6o3dpyav8qim" path="res://SolarSystem/SolarSystem.gdshader" id="4_d7pgu"]
-[ext_resource type="Script" uid="uid://6qle6aeahlcv" path="res://SolarSystem/planet_factory.gd" id="6_5amox"]
+[ext_resource type="Script" uid="uid://6qle6aeahlcv" path="res://SolarSystem/Planet/planet_factory.gd" id="6_5amox"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n2bd0"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5amox"]
 transparency = 1
-shading_mode = 0
-vertex_color_use_as_albedo = true
-albedo_color = Color(1, 1, 1, 0.1)
+cull_mode = 2
+albedo_color = Color(0, 1, 1, 0.05)
+emission_enabled = true
+emission = Color(0, 0.3, 0.3, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rs2ug"]
+transparency = 1
+albedo_color = Color(1, 1, 1, 0.9)
+emission_enabled = true
+emission = Color(0.8, 0.8, 0.8, 0.8)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bmnt8"]
 shader = ExtResource("4_d7pgu")
@@ -35,8 +42,8 @@ background_mode = 2
 background_color = Color(0.0823653, 0.0436106, 0.00121367, 1)
 sky = SubResource("Sky_pmgwc")
 glow_enabled = true
-glow_intensity = 1.37
-glow_bloom = 1.0
+glow_intensity = 1.38
+glow_bloom = 0.1
 fog_mode = 1
 fog_light_color = Color(0.528136, 0.591972, 0, 1)
 fog_light_energy = 0.04
@@ -47,18 +54,23 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.999999, 0, 0, 0)
 script = ExtResource("1_qsrmq")
 Sun = ExtResource("2_h1gvi")
 Planet = ExtResource("3_pabgd")
-orbit_material = SubResource("StandardMaterial3D_n2bd0")
+orbit_material = SubResource("StandardMaterial3D_5amox")
+orbit_material_highlighted = SubResource("StandardMaterial3D_rs2ug")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1pbe0")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1000.98, 0)
 visible = false
-light_color = Color(1, 1, 0.180392, 1)
-light_energy = 0.848
+light_color = Color(0.958034, 0.959303, 0.96076, 1)
+light_energy = 4.572
+light_volumetric_fog_energy = 16.0
+light_angular_distance = 90.0
 sky_mode = 1
 
 [node name="MainCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.939693, 0.34202, 0, -0.34202, 0.939693, 0, 171.01, 469.846)
 top_level = true
 current = true
 far = 40000.0

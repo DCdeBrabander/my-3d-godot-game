@@ -1,41 +1,45 @@
-[gd_scene load_steps=5 format=3 uid="uid://cyw28c4voojw2"]
+[gd_scene load_steps=6 format=3 uid="uid://cyw28c4voojw2"]
 
 [ext_resource type="Script" uid="uid://dvctjqp382u3n" path="res://SolarSystem/Sun/sun.gd" id="1_1y2s6"]
+[ext_resource type="Shader" uid="uid://bxjmenebn8q0t" path="res://SolarSystem/Sun/Sun.gdshader" id="2_qgbl3"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1y2s6"]
-albedo_color = Color(1, 1, 0, 1)
-emission_enabled = true
-emission = Color(1, 1, 0.180392, 1)
-emission_energy_multiplier = 16.0
-emission_operator = 1
-backlight = Color(0.817028, 0.66116, 0.056841, 1)
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qgbl3"]
+render_priority = 0
+shader = ExtResource("2_qgbl3")
+shader_parameter/intensity = 0.686
+shader_parameter/speed = 0.0
+shader_parameter/sun_color = Color(1, 0.7, 0.2, 1)
+shader_parameter/core_color = Color(1, 0.9, 0.6, 1)
+shader_parameter/surface_detail = 0.052
+shader_parameter/flicker_strength = 0.046
+shader_parameter/corona_size = 3.0
 
-[sub_resource type="SphereMesh" id="SphereMesh_y3bnj"]
-material = SubResource("StandardMaterial3D_1y2s6")
-radius = 62.38
-height = 124.76
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y3bnj"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8wtwh"]
+next_pass = SubResource("ShaderMaterial_qgbl3")
 albedo_color = Color(1, 1, 0, 1)
 emission_enabled = true
 emission = Color(1, 1, 0, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_y3bnj"]
+material = SubResource("StandardMaterial3D_8wtwh")
+radius = 60.0
+height = 120.0
 
 [node name="Sun" type="Node3D"]
 script = ExtResource("1_1y2s6")
 MIN_RADIUS = 30
 MAX_RADIUS = 100
 
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_color = Color(0.739126, 0.654378, 2.31028e-06, 1)
+light_energy = 16.0
+light_size = 60.0
+omni_range = 4096.0
+omni_attenuation = 0.398
+
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_y3bnj")
-surface_material_override/0 = SubResource("StandardMaterial3D_y3bnj")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 visible = false
 sky_mode = 1
-
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
-light_color = Color(0.978849, 1, 0.396481, 1)
-light_energy = 16.0
-light_size = 6.0
-omni_range = 4096.0
-omni_shadow_mode = 0

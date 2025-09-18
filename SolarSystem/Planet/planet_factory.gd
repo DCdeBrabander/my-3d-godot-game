@@ -1,3 +1,5 @@
+@tool
+
 class_name PlanetFactory extends Node
 
 @export var Planet: PackedScene
