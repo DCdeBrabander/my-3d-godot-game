@@ -1,12 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://bdt471fkqb415"]
+[gd_scene load_steps=5 format=3 uid="uid://bdt471fkqb415"]
 
 [ext_resource type="Script" uid="uid://x6u1p2g613fy" path="res://SolarSystem/Satellites/satellite.gd" id="1_8sqj5"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_xew1j"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8sqj5"]
+albedo_color = Color(0, 1, 1, 1)
+
 [sub_resource type="SphereMesh" id="SphereMesh_5sqdo"]
-radius = 19.528
-height = 39.461
+radius = 4.0
+height = 8.0
 
 [node name="Satellite" type="CharacterBody3D"]
 script = ExtResource("1_8sqj5")
@@ -15,4 +18,5 @@ script = ExtResource("1_8sqj5")
 shape = SubResource("SphereShape3D_xew1j")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+material_override = SubResource("StandardMaterial3D_8sqj5")
 mesh = SubResource("SphereMesh_5sqdo")

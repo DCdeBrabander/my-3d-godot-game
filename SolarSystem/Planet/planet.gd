@@ -114,9 +114,10 @@ func setup_type_surface(): pass
 
 func setup_type_size():
 	var collision_shape = find_child("CollisionShape3D", true, false)
+	
 	var radius: float = Utils.pick_from_range_with_bias(
 		self.RADIUS_RANGE
-	)
+	) if self.RADIUS_RANGE else 0
 		
 	if mesh_instance and mesh_instance.mesh is SphereMesh:
 		var sphere := mesh_instance.mesh as SphereMesh

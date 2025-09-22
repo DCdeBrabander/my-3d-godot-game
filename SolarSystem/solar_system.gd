@@ -11,8 +11,10 @@ class_name SolarSystem extends Node3D
 
 @onready var MainCamera: Camera3D = $MainCamera #TODO move to new main scene
 @onready var GlobalLight: DirectionalLight3D = $DirectionalLight3D # unused, cleanup
-@onready var HUD: CanvasLayer = preload("res://UI/HUD.tscn").instantiate() # TODO move to new main scene
 @onready var PlanetFactory: PlanetFactory = $PlanetFactory
+
+var SatelliteSpawnerScene: PackedScene = preload("res://SolarSystem/Satellites/SatelliteManager.tscn")
+var satellite_spawner: Node
 
 # In the future it could be a black hole? 
 var system_center_node: Node3D
@@ -33,16 +35,41 @@ func _exit_tree() -> void:
 	disconnect_events()
 	
 func _ready() -> void:
+	setup_satellite_spawner()
+	setup_input_manager()
 	setup_orbit_materials()
-	add_child(HUD)
 	add_sun()
 	add_planets()
 	
+func setup_input_manager():
+	if not InputManager: 
+		print("ERROR: InputManager") 
+		return
+		
+	InputManager.game_action.connect(_on_game_action)
+	#InputManager.game_paused.connect(_on_game_paused)
+	print("SolarSystem connected to InputManager")
+
+func _on_game_action(action: String):
+	match action:
+		"spawn_object":
+			spawn_satellite()
+
+func setup_satellite_spawner():
+	satellite_spawner = SatelliteSpawnerScene.instantiate()
+	add_child(satellite_spawner)
+	
+func spawn_satellite():
+	if active_planet_index == -1: return
+	satellite_spawner.spawn_satellite(planets[active_planet_index])
+	
 func connect_events():
+	if not Signalbus: return
 	Signalbus.node_selected.connect(_on_node_selected)
 	Signalbus.node_deselected.connect(_on_node_deselected)
 
 func disconnect_events():
+	if not Signalbus: return
 	Signalbus.node_selected.disconnect(_on_node_selected)
 	Signalbus.node_deselected.disconnect(_on_node_deselected)
 	
